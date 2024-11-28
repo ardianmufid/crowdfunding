@@ -1,0 +1,18 @@
+app:
+  name: example_app
+  port: ":0000"
+  encryption:
+    salt: 0
+    jwt_secret: example_secret
+
+db:
+  host: localhost
+  port: 5432
+  name: example db
+  user: example_user
+  password: example_password
+  connection_pool:
+    max_idle_connection: 0
+    max_open_connection: 0
+    max_lifetime_connection: 0 #second
+    max_idletime_connection: 0 #second
