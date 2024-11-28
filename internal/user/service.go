@@ -2,12 +2,14 @@ package user
 
 import (
 	"crowdfunding/config"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Repository interface {
 	Save(user User) (User, error)
+	FindByEmail(email string) (User, error)
 }
 
 type service struct {
@@ -41,4 +43,26 @@ func (s service) RegisterUser(request RegisterUserRequest) (User, error) {
 	}
 
 	return newUser, nil
+}
+
+func (s service) LoginUser(request LoginUserRequest) (User, error) {
+
+	email := request.Email
+	password := request.Password
+
+	user, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Id == 0 {
+		return user, errors.New("user not found")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

@@ -7,6 +7,11 @@ type RegisterUserRequest struct {
 	Password   string `json:"password" binding:"required"`
 }
 
+type LoginUserRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
 type RegisterUserResponse struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
@@ -15,7 +20,7 @@ type RegisterUserResponse struct {
 	Token      string `json:"token"`
 }
 
-func NewRegisterUserResponse(user User, token string) RegisterUserResponse {
+func NewMapperUserResponse(user User, token string) RegisterUserResponse {
 	return RegisterUserResponse{
 		ID:         user.Id,
 		Name:       user.Name,

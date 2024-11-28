@@ -10,11 +10,9 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 	svc := NewService(repo)
 	handler := newHandler(svc)
 
-	_ = handler
-
 	authRouter := router.Group("auth")
 	{
-		authRouter.POST("register", handler.register)
-		// authRouter.POST("login", handler.login)
+		authRouter.POST("signup", handler.register)
+		authRouter.POST("signin", handler.login)
 	}
 }
