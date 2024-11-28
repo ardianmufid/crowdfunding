@@ -15,4 +15,6 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 		authRouter.POST("signup", handler.register)
 		authRouter.POST("signin", handler.login)
 	}
+
+	router.POST("email_checkers", handler.checkEmailAvailability)
 }

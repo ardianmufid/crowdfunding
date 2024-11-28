@@ -79,3 +79,38 @@ func (h handler) login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response)
 }
+
+func (h handler) checkEmailAvailability(ctx *gin.Context) {
+	var input CheckEmailRequest
+
+	err := ctx.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.NewResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
+
+		ctx.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	isEmailAvailable, err := h.svc.IsEmailAvailable(input)
+	if err != nil {
+		errorMessage := gin.H{"errors": "Server Error"}
+		response := helper.NewResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		ctx.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{"is_available": isEmailAvailable}
+
+	metaMessage := "Email has been registered"
+	if isEmailAvailable {
+		metaMessage = "Email is available"
+	}
+
+	response := helper.NewResponse(metaMessage, http.StatusOK, "success", data)
+
+	ctx.JSON(http.StatusOK, response)
+
+}

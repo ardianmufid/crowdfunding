@@ -66,3 +66,18 @@ func (s service) LoginUser(request LoginUserRequest) (User, error) {
 
 	return user, nil
 }
+
+func (s service) IsEmailAvailable(input CheckEmailRequest) (bool, error) {
+	email := input.Email
+
+	user, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return false, err
+	}
+
+	if user.Id == 0 {
+		return true, nil
+	}
+
+	return false, nil
+}

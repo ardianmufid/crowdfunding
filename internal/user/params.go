@@ -12,6 +12,10 @@ type LoginUserRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type CheckEmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
 type RegisterUserResponse struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`

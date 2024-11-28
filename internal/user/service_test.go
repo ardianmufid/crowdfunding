@@ -52,3 +52,12 @@ func TestLogin_Success(t *testing.T) {
 	require.NotNil(t, user)
 	log.Println(user)
 }
+
+func TestIsEmailAvailable_Success(t *testing.T) {
+	req := CheckEmailRequest{
+		Email: "ardian@gmail.com",
+	}
+	isEmailAvailable, err := svc.IsEmailAvailable(req)
+	require.Nil(t, err)
+	require.Equal(t, false, isEmailAvailable)
+}
