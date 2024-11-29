@@ -2,6 +2,7 @@ package user
 
 import (
 	"crowdfunding/internal/helper"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -113,4 +114,44 @@ func (h handler) checkEmailAvailability(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response)
 
+}
+
+func (h handler) UploadAvatar(ctx *gin.Context) {
+
+	file, err := ctx.FormFile("avatar")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.NewResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// JWT
+	userID := 1
+
+	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
+
+	err = ctx.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.NewResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.svc.SaveAvatar(userID, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.NewResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helper.NewResponse("Avatar successfully uploaded", http.StatusCreated, "success", data)
+
+	ctx.JSON(http.StatusCreated, response)
 }

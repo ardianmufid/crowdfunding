@@ -17,4 +17,5 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 	}
 
 	router.POST("email_checkers", handler.checkEmailAvailability)
+	router.POST("avatars", handler.UploadAvatar)
 }

@@ -10,6 +10,8 @@ import (
 type Repository interface {
 	Save(user User) (User, error)
 	FindByEmail(email string) (User, error)
+	FindByID(Id int) (User, error)
+	Update(user User) (User, error)
 }
 
 type service struct {
@@ -80,4 +82,21 @@ func (s service) IsEmailAvailable(input CheckEmailRequest) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (s service) SaveAvatar(Id int, fileLocation string) (User, error) {
+
+	user, err := s.repo.FindByID(Id)
+	if err != nil {
+		return user, err
+	}
+
+	user.AvatarFileName = fileLocation
+
+	updatedUser, err := s.repo.Update(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
 }
