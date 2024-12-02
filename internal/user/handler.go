@@ -2,6 +2,7 @@ package user
 
 import (
 	"crowdfunding/internal/helper"
+	"crowdfunding/internal/utils"
 	"fmt"
 	"net/http"
 
@@ -44,7 +45,18 @@ func (h handler) register(ctx *gin.Context) {
 		return
 	}
 
-	registerUserResponse := NewMapperUserResponse(newUser, "initokenbro")
+	token, err := utils.GenerateToken(newUser.Id)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.NewResponse("Register account failed", http.StatusBadRequest, "error", errorMessage)
+
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	registerUserResponse := NewMapperUserResponse(newUser, token)
 
 	response := helper.NewResponse("Account has been registered", http.StatusCreated, "success", registerUserResponse)
 
@@ -74,7 +86,16 @@ func (h handler) login(ctx *gin.Context) {
 		return
 	}
 
-	loginUserResponse := NewMapperUserResponse(loggedinUser, "initokenbro")
+	token, err := utils.GenerateToken(loggedinUser.Id)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+
+		response := helper.NewResponse("login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		ctx.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loginUserResponse := NewMapperUserResponse(loggedinUser, token)
 
 	response := helper.NewResponse("Succesfully loggedin", http.StatusOK, "success", loginUserResponse)
 
