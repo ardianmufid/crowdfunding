@@ -1,6 +1,8 @@
 package user
 
 import (
+	"crowdfunding/internal/middleware"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -17,5 +19,14 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 	}
 
 	router.POST("email_checkers", handler.checkEmailAvailability)
-	router.POST("avatars", handler.UploadAvatar)
+
+	protectedRouter := router.Group("")
+	protectedRouter.Use(middleware.AuthMiddleware()) // Terapkan middleware ke seluruh grup
+	{
+		protectedRouter.POST("avatars", handler.UploadAvatar)
+	}
+
+	// router.POST("avatars", handler.UploadAvatar)
+	// router.GET("user/fetch", handler.FetchUser)
+
 }

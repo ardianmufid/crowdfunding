@@ -100,3 +100,17 @@ func (s service) SaveAvatar(Id int, fileLocation string) (User, error) {
 
 	return updatedUser, nil
 }
+
+// func (s service) GetUserByID(Id int) (User, error) {
+
+// 	user, err := s.repo.FindByID(Id)
+// 	if err != nil {
+// 		return user, err
+// 	}
+
+// 	if user.Id == 0 {
+// 		return user, errors.New("user not found")
+// 	}
+
+// 	return user, nil
+// }
