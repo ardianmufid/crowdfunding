@@ -39,3 +39,25 @@ func (h handler) GetCampaigns(ctx *gin.Context) {
 	response := helper.NewResponse("List of Campaigns", http.StatusOK, "success", NewMapperCampaignsResponse(campaigns))
 	ctx.JSON(http.StatusOK, response)
 }
+
+func (h handler) GetCampaign(ctx *gin.Context) {
+
+	var request CampaignDetailRequest
+
+	err := ctx.ShouldBindUri(&request)
+	if err != nil {
+		response := helper.NewResponse("Failed to get detail campaign", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	campaign, err := h.svc.GetCampaignByID(request)
+	if err != nil {
+		response := helper.NewResponse("Failed to get detail campaign", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.NewResponse("Campaign detail", http.StatusOK, "success", NewMapperCampaignDetailResponse(campaign))
+	ctx.JSON(http.StatusOK, response)
+}

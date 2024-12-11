@@ -1,11 +1,12 @@
 package campaign
 
 import (
+	"crowdfunding/internal/user"
 	"time"
 )
 
 type Campaign struct {
-	Id               int
+	ID               int
 	UserID           int
 	Name             string
 	ShortDescription string
@@ -18,13 +19,14 @@ type Campaign struct {
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	CampaignImages   []CampaignImage
+	User             user.User
 }
 
 type CampaignImage struct {
-	Id         int
+	ID         int
 	CampaignId int
 	FileName   string
-	IsPrimary  bool
+	IsPrimary  int
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }

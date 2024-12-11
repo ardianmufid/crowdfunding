@@ -31,3 +31,13 @@ func (r repository) FindCampaignByUserID(userID int) ([]Campaign, error) {
 
 	return campaigns, nil
 }
+
+func (r repository) FindCampaignByID(ID int) (Campaign, error) {
+	var campaign Campaign
+
+	if err := r.db.Preload("User").Preload("CampaignImages").Where("id = ?", ID).Find(&campaign).Error; err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
+}

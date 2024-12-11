@@ -10,10 +10,10 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 	svc := NewService(repo)
 	handler := NewHandler(svc)
 
-	campaignRouter := router.Group("")
+	campaignRouter := router.Group("campaigns")
 	{
-		campaignRouter.GET("signup", handler.GetCampaigns)
-		// campaignRouter.POST("signin", handler.login)
+		campaignRouter.GET("", handler.GetCampaigns)
+		campaignRouter.GET("/:id", handler.GetCampaign)
 	}
 
 	// router.POST("email_checkers", handler.checkEmailAvailability)
