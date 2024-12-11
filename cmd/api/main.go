@@ -3,6 +3,7 @@ package main
 import (
 	"crowdfunding/config"
 	"crowdfunding/database"
+	"crowdfunding/internal/campaign"
 	"crowdfunding/internal/user"
 	"log"
 
@@ -29,7 +30,10 @@ func main() {
 
 	api := router.Group("api/v1")
 
+	api.Static("/images", "./images")
+
 	user.Init(api, db)
+	campaign.Init(api, db)
 
 	router.Run(config.Cfg.App.Port)
 }
