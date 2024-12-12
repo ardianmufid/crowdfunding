@@ -41,3 +41,11 @@ func (r repository) FindCampaignByID(ID int) (Campaign, error) {
 
 	return campaign, nil
 }
+
+func (r repository) Save(campaign Campaign) (Campaign, error) {
+	if err := r.db.Create(&campaign).Error; err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
+}

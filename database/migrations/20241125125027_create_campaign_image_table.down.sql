@@ -1,1 +1,1 @@
-DROP TABLE IS EXISTS campaign_images;
+DROP TABLE IF EXISTS campaign_images;

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS campaigns (
     description TEXT,
     goal_amount INT,
     current_amount INT,
-    perk TEXT,
+    perks TEXT,
     becker_count INT,
     user_id INT,
     slug VARCHAR(100),
