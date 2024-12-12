@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"crowdfunding/internal/utils"
+	"errors"
 	"fmt"
 )
 
@@ -10,6 +11,7 @@ type Repository interface {
 	FindCampaignByUserID(userID int) ([]Campaign, error)
 	FindCampaignByID(ID int) (Campaign, error)
 	Save(campaign Campaign) (Campaign, error)
+	Update(campaign Campaign) (Campaign, error)
 }
 
 type service struct {
@@ -69,4 +71,29 @@ func (s service) CreateCampaign(request CreateCampaignRequest) (Campaign, error)
 	}
 
 	return newCampaign, nil
+}
+
+func (s service) UpdateCampaign(requestID CampaignDetailRequest, requestData CreateCampaignRequest) (Campaign, error) {
+
+	campaign, err := s.repo.FindCampaignByID(requestID.ID)
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.UserID != requestData.User.Id {
+		return campaign, errors.New("failed to update campaign")
+	}
+
+	campaign.Name = requestData.Name
+	campaign.ShortDescription = requestData.ShortDescription
+	campaign.Description = requestData.Description
+	campaign.Perks = requestData.Perks
+	campaign.GoalAmount = requestData.GoalAmount
+
+	updatedCampaign, err := s.repo.Update(campaign)
+	if err != nil {
+		return updatedCampaign, err
+	}
+
+	return updatedCampaign, nil
 }

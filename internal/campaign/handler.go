@@ -95,3 +95,42 @@ func (h handler) CreateCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response)
 
 }
+
+func (h handler) UpdateCampaign(ctx *gin.Context) {
+
+	var requestID CampaignDetailRequest
+	var requestData CreateCampaignRequest
+
+	err := ctx.ShouldBindUri(&requestID)
+	if err != nil {
+		response := helper.NewResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = ctx.ShouldBindJSON(&requestData)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.NewResponse("Failed to update campaign", http.StatusUnprocessableEntity, "error", errorMessage)
+		ctx.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUserID := ctx.GetInt("USER_ID")
+	currentUser, err := h.svcUser.GetUserByID(currentUserID)
+
+	requestData.User = currentUser
+
+	updatedCampaign, err := h.svc.UpdateCampaign(requestID, requestData)
+	if err != nil {
+		response := helper.NewResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.NewResponse("Success to update campaign", http.StatusOK, "success", NewMapperCampaignResponse(updatedCampaign))
+	ctx.JSON(http.StatusOK, response)
+
+}

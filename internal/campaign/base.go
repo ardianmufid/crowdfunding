@@ -30,6 +30,7 @@ func Init(router *gin.RouterGroup, db *gorm.DB) {
 	protectedRouter.Use(middleware.AuthMiddleware()) // Terapkan middleware ke seluruh grup
 	{
 		protectedRouter.POST("", handler.CreateCampaign)
+		protectedRouter.PUT("/:id", handler.UpdateCampaign)
 	}
 
 }

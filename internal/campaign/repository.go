@@ -49,3 +49,12 @@ func (r repository) Save(campaign Campaign) (Campaign, error) {
 
 	return campaign, nil
 }
+
+func (r repository) Update(campaign Campaign) (Campaign, error) {
+
+	if err := r.db.Save(&campaign).Error; err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
+}
