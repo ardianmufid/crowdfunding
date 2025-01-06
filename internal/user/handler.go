@@ -34,7 +34,7 @@ func (h handler) register(ctx *gin.Context) {
 		return
 	}
 
-	newUser, err := h.svc.RegisterUser(request)
+	newUser, err := h.svc.RegisterUser(ctx.Request.Context(), request)
 	if err != nil {
 		errors := helper.FormatValidationError(err)
 		errorMessage := gin.H{"errors": errors}
@@ -77,7 +77,7 @@ func (h handler) login(ctx *gin.Context) {
 		return
 	}
 
-	loggedinUser, err := h.svc.LoginUser(request)
+	loggedinUser, err := h.svc.LoginUser(ctx.Request.Context(), request)
 	if err != nil {
 		errorMessage := gin.H{"errors": err.Error()}
 
@@ -116,7 +116,7 @@ func (h handler) checkEmailAvailability(ctx *gin.Context) {
 		return
 	}
 
-	isEmailAvailable, err := h.svc.IsEmailAvailable(input)
+	isEmailAvailable, err := h.svc.IsEmailAvailable(ctx.Request.Context(), input)
 	if err != nil {
 		errorMessage := gin.H{"errors": "Server Error"}
 		response := helper.NewResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
@@ -164,7 +164,7 @@ func (h handler) UploadAvatar(ctx *gin.Context) {
 		return
 	}
 
-	_, err = h.svc.SaveAvatar(userID, path)
+	_, err = h.svc.SaveAvatar(ctx.Request.Context(), userID, path)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
 		response := helper.NewResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)

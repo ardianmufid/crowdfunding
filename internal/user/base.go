@@ -4,10 +4,10 @@ import (
 	"crowdfunding/internal/middleware"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/jmoiron/sqlx"
 )
 
-func Init(router *gin.RouterGroup, db *gorm.DB) {
+func Init(router *gin.RouterGroup, db *sqlx.DB) {
 	repo := NewRepository(db)
 	svc := NewService(repo)
 	handler := newHandler(svc)

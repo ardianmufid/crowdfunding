@@ -3,7 +3,6 @@ package main
 import (
 	"crowdfunding/config"
 	"crowdfunding/database"
-	"crowdfunding/internal/campaign"
 	"crowdfunding/internal/user"
 	"log"
 
@@ -17,7 +16,7 @@ func main() {
 		panic(err)
 	}
 
-	db, err := database.ConnectPostgres(config.Cfg.DB)
+	db, err := database.ConnectPostgresSqlx(config.Cfg.DB)
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +32,7 @@ func main() {
 	api.Static("/images", "./images")
 
 	user.Init(api, db)
-	campaign.Init(api, db)
+	// campaign.Init(api, db)
 
 	router.Run(config.Cfg.App.Port)
 }

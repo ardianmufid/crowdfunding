@@ -1,18 +1,11 @@
 package user
 
 import (
+	"context"
 	"crowdfunding/config"
 	"errors"
-
-	"golang.org/x/crypto/bcrypt"
+	"time"
 )
-
-type Repository interface {
-	Save(user User) (User, error)
-	FindByEmail(email string) (User, error)
-	FindByID(Id int) (User, error)
-	Update(user User) (User, error)
-}
 
 type Service interface {
 	GetUserByID(Id int) (User, error)
@@ -28,55 +21,42 @@ func NewService(repo Repository) service {
 	}
 }
 
-func (s service) RegisterUser(request RegisterUserRequest) (User, error) {
+func (s service) RegisterUser(ctx context.Context, request RegisterUserRequest) (user User, err error) {
 
-	user := User{}
-	user.Name = request.Name
-	user.Email = request.Email
-	user.Occupation = request.Occupation
+	user = NewFromRegisterRequest(request)
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), int(config.Cfg.App.Encryption.Salt))
-	if err != nil {
-		return user, err
+	if err = user.EncryptPassword(int(config.Cfg.App.Encryption.Salt)); err != nil {
+		return
 	}
 
-	user.PasswordHash = string(passwordHash)
-	user.Role = "user"
-
-	newUser, err := s.repo.Save(user)
+	newUser, err := s.repo.Save(ctx, user)
 	if err != nil {
 		return newUser, err
 	}
 
 	return newUser, nil
+
 }
 
-func (s service) LoginUser(request LoginUserRequest) (User, error) {
+func (s service) LoginUser(ctx context.Context, request LoginUserRequest) (user User, err error) {
 
-	email := request.Email
-	password := request.Password
-
-	user, err := s.repo.FindByEmail(email)
+	user, err = s.repo.FindByEmail(ctx, request.Email)
 	if err != nil {
-		return user, err
+		return
+	}
+	if err = user.VerifyPassword(request.Password); err != nil {
+		err = errors.New("password not match")
+		return
 	}
 
-	if user.Id == 0 {
-		return user, errors.New("user not found")
-	}
+	return
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
 }
 
-func (s service) IsEmailAvailable(input CheckEmailRequest) (bool, error) {
+func (s service) IsEmailAvailable(ctx context.Context, input CheckEmailRequest) (bool, error) {
 	email := input.Email
 
-	user, err := s.repo.FindByEmail(email)
+	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return false, err
 	}
@@ -88,26 +68,42 @@ func (s service) IsEmailAvailable(input CheckEmailRequest) (bool, error) {
 	return false, nil
 }
 
-func (s service) SaveAvatar(Id int, fileLocation string) (User, error) {
+func (s service) SaveAvatar(ctx context.Context, Id int, fileLocation string) (user User, err error) {
 
-	user, err := s.repo.FindByID(Id)
+	user, err = s.repo.FindByID(ctx, Id)
 	if err != nil {
-		return user, err
+		return
 	}
 
 	user.AvatarFileName = fileLocation
+	user.UpdatedAt = time.Now()
 
-	updatedUser, err := s.repo.Update(user)
+	updatedUser, err := s.repo.Update(ctx, user)
 	if err != nil {
 		return updatedUser, err
 	}
 
 	return updatedUser, nil
+
+	// user, err := s.repo.FindByID(Id)
+	// if err != nil {
+	// 	return user, err
+	// }
+
+	// user.AvatarFileName = fileLocation
+
+	// updatedUser, err := s.repo.Update(user)
+	// if err != nil {
+	// 	return updatedUser, err
+	// }
+
+	// return updatedUser, nil
+
 }
 
-func (s service) GetUserByID(Id int) (User, error) {
+func (s service) GetUserByID(ctx context.Context, Id int) (User, error) {
 
-	user, err := s.repo.FindByID(Id)
+	user, err := s.repo.FindByID(ctx, Id)
 	if err != nil {
 		return user, err
 	}

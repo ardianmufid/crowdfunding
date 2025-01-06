@@ -15,10 +15,18 @@ func init() {
 	}
 }
 
-func TestConnectionPostgres(t *testing.T) {
+func TestConnectionPostgresSqlx(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		db, err := ConnectPostgres(config.Cfg.DB)
+		db, err := ConnectPostgresSqlx(config.Cfg.DB)
 		require.Nil(t, err)
 		require.NotNil(t, db)
 	})
 }
+
+//	func TestConnectionPostgresGorm(t *testing.T) {
+//		t.Run("success", func(t *testing.T) {
+//			db, err := ConnectPostgresGorm(config.Cfg.DB)
+//			require.Nil(t, err)
+//			require.NotNil(t, db)
+//		})
+//	}
