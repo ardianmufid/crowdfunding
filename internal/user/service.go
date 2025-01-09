@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	GetUserByID(Id int) (User, error)
+	GetUserByID(ctx context.Context, Id int) (User, error)
 }
 
 type service struct {
