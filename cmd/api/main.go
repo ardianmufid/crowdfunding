@@ -4,6 +4,7 @@ import (
 	"crowdfunding/config"
 	"crowdfunding/database"
 	"crowdfunding/internal/campaign"
+	"crowdfunding/internal/transaction"
 	"crowdfunding/internal/user"
 	"log"
 
@@ -34,6 +35,7 @@ func main() {
 
 	user.Init(api, db)
 	campaign.Init(api, db)
+	transaction.Init(api, db)
 
 	router.Run(config.Cfg.App.Port)
 }
