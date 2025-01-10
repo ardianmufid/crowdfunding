@@ -41,50 +41,67 @@ func NewMapperTransactionsResponse(transactions []Transaction) []CampaignTransac
 	return transactionsMapper
 }
 
-// type UserTransactionResponse struct {
-// 	ID        int              `json:"id"`
-// 	Amount    int              `json:"amount"`
-// 	Status    string           `json:"status"`
-// 	CreatedAt time.Time        `json:"created_at"`
-// 	Campaign  CampaignResponse `json:"campaign"`
-// }
+type UserTransactionResponse struct {
+	ID        int              `json:"id"`
+	Amount    int              `json:"amount"`
+	Status    string           `json:"status"`
+	CreatedAt time.Time        `json:"created_at"`
+	Campaign  CampaignResponse `json:"campaign"`
+}
 
-// type CampaignResponse struct {
-// 	Name     string `json:"name"`
-// 	ImageURL string `json:"image_url"`
-// }
+type CampaignResponse struct {
+	Name     string `json:"name"`
+	ImageURL string `json:"image_url"`
+}
 
-// func NewMapperUserTransactionResponse(transaction Transaction) UserTransactionResponse {
-// 	formatter := UserTransactionResponse{}
-// 	formatter.ID = transaction.ID
-// 	formatter.Amount = transaction.Amount
-// 	formatter.Status = transaction.Status
-// 	formatter.CreatedAt = transaction.CreatedAt
+func NewMapperUserTransactionResponse(transaction Transaction) UserTransactionResponse {
+	formatter := UserTransactionResponse{}
+	formatter.ID = transaction.ID
+	formatter.Amount = transaction.Amount
+	formatter.Status = transaction.Status
+	formatter.CreatedAt = transaction.CreatedAt
 
-// 	campaignResponse := CampaignResponse{}
-// 	campaignResponse.Name = transaction.Campaign.Name
-// 	campaignResponse.ImageURL = ""
+	// Image URL
+	ImageUrl := ""
+	if transaction.Campaign.CampaignImages != nil && len(*transaction.Campaign.CampaignImages) > 0 {
+		// Cari gambar yang is_primary = true
+		for _, img := range *transaction.Campaign.CampaignImages {
+			if *img.IsPrimary {
+				ImageUrl = *img.FileName
+				break // Hentikan loop setelah menemukan gambar utama
+			}
+		}
 
-// 	if len(*transaction.Campaign.CampaignImages) > 0 {
-// 		campaignResponse.ImageURL = transaction.Campaign.CampaignImages[0].FileName
-// 	}
+		// Jika tidak ditemukan gambar dengan is_primary = true, pilih gambar pertama
+		if ImageUrl == "" {
+			ImageUrl = *(*transaction.Campaign.CampaignImages)[0].FileName
+		}
+	}
 
-// 	formatter.Campaign = campaignResponse
+	campaignResponse := CampaignResponse{}
+	campaignResponse.Name = transaction.Campaign.Name
+	campaignResponse.ImageURL = ImageUrl
 
-// 	return formatter
-// }
+	// if len(*transaction.Campaign.CampaignImages) > 0 {
+	// 	campaignResponse.ImageURL = transaction.Campaign.CampaignImages[0].FileName
+	// }
 
-// func NewMapperUserTransactionsResponse(transactions []Transaction) []UserTransactionResponse {
-// 	if len(transactions) == 0 {
-// 		return []UserTransactionResponse{}
-// 	}
+	formatter.Campaign = campaignResponse
 
-// 	var transactionsFormatter []UserTransactionResponse
+	return formatter
+}
 
-// 	for _, transaction := range transactions {
-// 		formatter := NewMapperUserTransactionResponse(transaction)
-// 		transactionsFormatter = append(transactionsFormatter, formatter)
-// 	}
+func NewMapperUserTransactionsResponse(transactions []Transaction) []UserTransactionResponse {
+	if len(transactions) == 0 {
+		return []UserTransactionResponse{}
+	}
 
-// 	return transactionsFormatter
-// }
+	var transactionsFormatter []UserTransactionResponse
+
+	for _, transaction := range transactions {
+		formatter := NewMapperUserTransactionResponse(transaction)
+		transactionsFormatter = append(transactionsFormatter, formatter)
+	}
+
+	return transactionsFormatter
+}

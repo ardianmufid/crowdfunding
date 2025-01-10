@@ -20,7 +20,7 @@ type Campaign struct {
 	Slug             string           `db:"slug"`
 	CreatedAt        time.Time        `db:"created_at"`
 	UpdatedAt        time.Time        `db:"updated_at"`
-	CampaignImages   *[]CampaignImage `db:"campaign_images" json:"campaign_images"`
+	CampaignImages   *[]CampaignImage `db:"campaign_images"`
 	User             user.User        `db:"user"`
 }
 

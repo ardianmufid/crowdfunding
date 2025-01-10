@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	GetCampaignID(ctx context.Context, CampaignID int) (transactions []Transaction, err error)
+	GetByUserID(ctx context.Context, userID int) (transactions []Transaction, err error)
 }
 
 type service struct {
@@ -36,6 +37,16 @@ func (s service) GetTransactionByCampaignID(ctx context.Context, request GetCamp
 	transactions, err = s.repository.GetCampaignID(ctx, request.ID)
 	if err != nil {
 		return []Transaction{}, err
+	}
+
+	return
+}
+
+func (s service) GetTransactionByUserID(ctx context.Context, userID int) (transactions []Transaction, err error) {
+
+	transactions, err = s.repository.GetByUserID(ctx, userID)
+	if err != nil {
+		return []Transaction{}, nil
 	}
 
 	return

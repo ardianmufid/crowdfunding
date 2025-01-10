@@ -51,3 +51,17 @@ func (h handler) GetCampaignTransactions(ctx *gin.Context) {
 	response := helper.NewResponse("Campaign's transactions", http.StatusOK, "success", NewMapperTransactionsResponse(transactions))
 	ctx.JSON(http.StatusOK, response)
 }
+
+func (h handler) GetUserTransactions(ctx *gin.Context) {
+
+	userID := ctx.GetInt("USER_ID")
+
+	transactions, err := h.svc.GetTransactionByUserID(ctx.Request.Context(), userID)
+	if err != nil {
+		response := helper.NewResponse("Failed to get user's transaction", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.NewResponse("User's transactions", http.StatusOK, "success", NewMapperUserTransactionsResponse(transactions))
+	ctx.JSON(http.StatusOK, response)
+}

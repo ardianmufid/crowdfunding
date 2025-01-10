@@ -2,7 +2,10 @@ package transaction
 
 import (
 	"context"
+	"crowdfunding/internal/campaign"
 	"crowdfunding/internal/user"
+	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -74,6 +77,155 @@ func (r repository) GetCampaignID(ctx context.Context, CampaignID int) (transact
 		transaction.User = user
 
 		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
+}
+
+// func (r repository) GetByUserID(ctx context.Context, userID int) (transactions []Transaction, err error) {
+
+// 	query := `
+// 		SELECT
+// 			t.id, t.user_id, t.campaign_id, t.amount, t.status, t.code, t.created_at, t.updated_at,
+// 			c.id, c.user_id, c.name, c.short_description, c.description,
+//             c.goal_amount, c.current_amount, c.perks, c.becker_count,
+//             c.slug, c.created_at, c.updated_at,
+//             ci.id, ci.campaign_id, ci.file_name, ci.is_primary, ci.created_at, ci.updated_at
+// 		FROM
+// 			transactions t
+// 		LEFT JOIN
+// 			campaigns c
+// 		ON t.campaign_id = c.id
+// 		LEFT JOIN
+// 			campaign_images ci
+// 		ON c.id = ci.campaign_id AND is_primary = true
+// 		WHERE
+// 			t.user_id = $1
+// 		ORDER BY
+// 			t.id DESC
+// 	`
+
+// 	rows, err := r.db.QueryxContext(ctx, query, userID)
+// 	if err != nil {
+// 		log.Printf("Scan error : %v", err)
+
+// 		return []Transaction{}, err
+// 	}
+
+// 	defer rows.Close()
+
+// 	for rows.Next() {
+// 		var transaction Transaction
+// 		var kampanye campaign.Campaign
+// 		var campaignImages campaign.CampaignImage
+
+// 		err := rows.Scan(
+// 			&transaction.ID,
+// 			&transaction.User_ID,
+// 			&transaction.Campaign_ID,
+// 			&transaction.Amount,
+// 			&transaction.Status,
+// 			&transaction.Code,
+// 			&transaction.CreatedAt,
+// 			&transaction.UpdatedAt,
+// 			&kampanye.ID,
+// 			&kampanye.UserID,
+// 			&kampanye.Name,
+// 			&kampanye.ShortDescription,
+// 			&kampanye.Description,
+// 			&kampanye.GoalAmount,
+// 			&kampanye.CurrentAmount,
+// 			&kampanye.Perks,
+// 			&kampanye.BeckerCount,
+// 			&kampanye.Slug,
+// 			&kampanye.CreatedAt,
+// 			&kampanye.UpdatedAt,
+// 			&campaignImages.ID,
+// 			&campaignImages.CampaignId,
+// 			&campaignImages.FileName,
+// 			&campaignImages.IsPrimary,
+// 			&campaignImages.CreatedAt,
+// 			&campaignImages.UpdatedAt,
+// 		)
+// 		if err != nil {
+// 			log.Printf("error : %v", err)
+
+// 			return []Transaction{}, err
+// 		}
+
+// 		transaction.Campaign = kampanye
+
+// 		if kampanye.CampaignImages == nil {
+// 			kampanye.CampaignImages = &[]campaign.CampaignImage{} // Inisialisasi slice jika nil
+// 		}
+
+// 		// Set Campaign Image only if not NULL
+// 		if campaignImages.ID != nil {
+// 			*kampanye.CampaignImages = append(*kampanye.CampaignImages, campaignImages)
+
+// 		}
+
+// 		transactions = append(transactions, transaction)
+// 	}
+
+// 	return
+// }
+
+func (r repository) GetByUserID(ctx context.Context, userID int) ([]Transaction, error) {
+	var transactions []Transaction
+
+	// Query untuk mengambil data Transactions berdasarkan user_id
+	transactionsQuery := `
+		SELECT 
+			id, user_id, campaign_id, amount, status, code, created_at, updated_at
+		FROM 
+			transactions
+		WHERE 
+			user_id = $1
+		ORDER BY 
+			id DESC
+	`
+	err := r.db.SelectContext(ctx, &transactions, transactionsQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Iterasi setiap transaksi untuk melengkapi data campaign dan campaign images
+	for i, transaction := range transactions {
+		// Query untuk mengambil data Campaign terkait
+		campaignQuery := `
+			SELECT
+				id, user_id, name, short_description, description,
+				goal_amount, current_amount, perks, becker_count,
+				slug, created_at, updated_at
+			FROM campaigns
+			WHERE id = $1
+		`
+		var kampanye campaign.Campaign
+		err = r.db.GetContext(ctx, &kampanye, campaignQuery, transaction.Campaign_ID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, fmt.Errorf("campaign with ID %d not found", transaction.Campaign_ID)
+			}
+			return nil, err
+		}
+
+		// Query untuk mengambil CampaignImages yang terkait
+		imagesQuery := `
+			SELECT
+				id, campaign_id, file_name, is_primary, created_at, updated_at
+			FROM campaign_images
+			WHERE campaign_id = $1
+		`
+		var campaignImages []campaign.CampaignImage
+		err = r.db.SelectContext(ctx, &campaignImages, imagesQuery, kampanye.ID)
+		if err != nil {
+			return nil, err
+		}
+		kampanye.CampaignImages = &campaignImages
+
+		// Assign campaign ke transaction
+		transactions[i].Campaign = kampanye
 	}
 
 	return transactions, nil
