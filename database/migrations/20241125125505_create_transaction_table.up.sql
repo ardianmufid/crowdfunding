@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS transactions(
     amount INT,
     status VARCHAR(50),
     code VARCHAR(50),
+    payment_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )

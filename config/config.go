@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	App AppConfig `yaml:"app"`
-	DB  DBConfig  `yaml:"db"`
+	App     AppConfig     `yaml:"app"`
+	DB      DBConfig      `yaml:"db"`
+	Payment PaymentConfig `yaml:"payment"`
 }
 
 type AppConfig struct {
@@ -36,6 +37,11 @@ type DBConnectionPoolConfig struct {
 	MaxOpenConnection     uint8 `yaml:"max_open_connection"`
 	MaxLifetimeConnection uint8 `yaml:"max_lifetime_connection"`
 	MaxIdletimeConnection uint8 `yaml:"max_idletime_connection"`
+}
+
+type PaymentConfig struct {
+	ServerKey string `yaml:"server_key"`
+	ClientKey string `yaml:"client_key"`
 }
 
 var Cfg Config

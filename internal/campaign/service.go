@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 )
 
 type Repository interface {
@@ -87,6 +88,7 @@ func (s service) UpdateCampaign(ctx context.Context, requestID CampaignDetailReq
 	campaign.Description = requestData.Description
 	campaign.Perks = requestData.Perks
 	campaign.GoalAmount = requestData.GoalAmount
+	campaign.UpdatedAt = time.Now()
 
 	updatedCampaign, err := s.repo.Update(ctx, campaign)
 	if err != nil {

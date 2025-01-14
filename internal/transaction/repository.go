@@ -51,8 +51,8 @@ func (r repository) GetCampaignID(ctx context.Context, CampaignID int) (transact
 
 		err := rows.Scan(
 			&transaction.ID,
-			&transaction.User_ID,
-			&transaction.Campaign_ID,
+			&transaction.UserID,
+			&transaction.CampaignID,
 			&transaction.Amount,
 			&transaction.Status,
 			&transaction.Code,
@@ -202,10 +202,10 @@ func (r repository) GetByUserID(ctx context.Context, userID int) ([]Transaction,
 			WHERE id = $1
 		`
 		var kampanye campaign.Campaign
-		err = r.db.GetContext(ctx, &kampanye, campaignQuery, transaction.Campaign_ID)
+		err = r.db.GetContext(ctx, &kampanye, campaignQuery, transaction.CampaignID)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				return nil, fmt.Errorf("campaign with ID %d not found", transaction.Campaign_ID)
+				return nil, fmt.Errorf("campaign with ID %d not found", transaction.CampaignID)
 			}
 			return nil, err
 		}
@@ -229,4 +229,83 @@ func (r repository) GetByUserID(ctx context.Context, userID int) ([]Transaction,
 	}
 
 	return transactions, nil
+}
+
+func (r repository) Save(ctx context.Context, model Transaction) (transaction Transaction, err error) {
+
+	log.Printf("Query parameters: user_id=%d, campaign_id=%d, amount=%d, status=%s, code=%v, created_at=%v, updated_at=%v",
+		model.UserID,
+		model.CampaignID,
+		model.Amount,
+		model.Status,
+		model.Code,
+		model.CreatedAt,
+		model.UpdatedAt,
+	)
+
+	query := `
+		INSERT INTO transactions (
+			user_id, campaign_id, amount, status, code, created_at, updated_at
+		) VALUES (
+			$1, $2, $3, $4, $5, $6, $7
+		)
+		RETURNING id, user_id, campaign_id, amount, status, code, created_at, updated_at
+	`
+
+	err = r.db.QueryRowxContext(
+		ctx,
+		query,
+		model.UserID,
+		model.CampaignID,
+		model.Amount,
+		model.Status,
+		model.Code,
+		model.CreatedAt,
+		model.UpdatedAt,
+	).StructScan(&transaction)
+
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (r repository) Update(ctx context.Context, model Transaction) (transaction Transaction, err error) {
+
+	query := `
+		UPDATE transactions
+		SET
+			user_id = $1,
+			campaign_id = $2,
+			amount = $3,
+			status = $4,
+			code = $5,
+			payment_url = $6,
+			updated_at = $7
+		WHERE id = $8
+		RETURNING
+			id, user_id, campaign_id, amount, status, code, payment_url, created_at, updated_at
+	`
+
+	err = r.db.QueryRowxContext(
+		ctx,
+		query,
+		model.UserID,
+		model.CampaignID,
+		model.Amount,
+		model.Status,
+		model.Code,
+		model.PaymentURL,
+		model.UpdatedAt,
+		model.ID,
+	).StructScan(&transaction)
+	if err != nil {
+		log.Printf("Scan error : %v", err)
+		if err == sql.ErrNoRows {
+			return
+		}
+		return
+	}
+
+	return
 }

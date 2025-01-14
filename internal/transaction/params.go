@@ -6,7 +6,7 @@ import (
 )
 
 type GetCampaignTrasactionRequest struct {
-	ID   int `uri:"id"`
+	ID   int `uri:"id" binding:"required"`
 	User user.User
 }
 
@@ -17,7 +17,7 @@ type CampaignTransactionsResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewMapperTransactionResponse(transaction Transaction) CampaignTransactionsResponse {
+func NewMapperCampaignTransactionResponse(transaction Transaction) CampaignTransactionsResponse {
 	return CampaignTransactionsResponse{
 		ID:        transaction.ID,
 		Name:      transaction.User.Name,
@@ -26,7 +26,7 @@ func NewMapperTransactionResponse(transaction Transaction) CampaignTransactionsR
 	}
 }
 
-func NewMapperTransactionsResponse(transactions []Transaction) []CampaignTransactionsResponse {
+func NewMapperCampaignTransactionsResponse(transactions []Transaction) []CampaignTransactionsResponse {
 	if len(transactions) == 0 {
 		return []CampaignTransactionsResponse{}
 	}
@@ -34,7 +34,7 @@ func NewMapperTransactionsResponse(transactions []Transaction) []CampaignTransac
 	var transactionsMapper []CampaignTransactionsResponse
 
 	for _, transaction := range transactions {
-		mapper := NewMapperTransactionResponse(transaction)
+		mapper := NewMapperCampaignTransactionResponse(transaction)
 		transactionsMapper = append(transactionsMapper, mapper)
 	}
 
@@ -104,4 +104,33 @@ func NewMapperUserTransactionsResponse(transactions []Transaction) []UserTransac
 	}
 
 	return transactionsFormatter
+}
+
+type CreateTransactionRequest struct {
+	Amount     int `json:"amount" binding:"required"`
+	CampaignID int `json:"campaign_id" binding:"required"`
+	User       user.User
+}
+
+type TransactionResponse struct {
+	ID         int    `json:"id"`
+	CampaignID int    `json:"campaign_id"`
+	UserID     int    `json:"user_id"`
+	Amount     int    `json:"amount"`
+	Status     string `json:"status"`
+	Code       string `json:"code"`
+	PaymentURL string `json:"payment_url"`
+}
+
+func NewMapperTransactionResponse(transaction Transaction) TransactionResponse {
+
+	return TransactionResponse{
+		ID:         transaction.ID,
+		CampaignID: transaction.CampaignID,
+		UserID:     transaction.UserID,
+		Amount:     transaction.Amount,
+		Status:     transaction.Status,
+		Code:       *transaction.Code,
+		PaymentURL: *transaction.PaymentURL,
+	}
 }

@@ -3,6 +3,7 @@ package transaction
 import (
 	"crowdfunding/internal/campaign"
 	"crowdfunding/internal/middleware"
+	"crowdfunding/internal/payment"
 	"crowdfunding/internal/user"
 
 	"github.com/gin-gonic/gin"
@@ -18,12 +19,16 @@ func Init(router *gin.RouterGroup, db *sqlx.DB) {
 	repoUser := user.NewRepository(db)
 	svcUser := user.NewService(repoUser)
 
+	// payment service
+	paymentService := payment.NewService()
+
 	repo := NewRepository(db)
-	svc := NewService(repo, campaignRepo)
+	svc := NewService(repo, campaignRepo, paymentService)
 	handler := NewHandler(svc, svcUser)
 
 	router.Use(middleware.AuthMiddleware()).GET("/campaigns/:id/transactions", handler.GetCampaignTransactions)
 	router.Use(middleware.AuthMiddleware()).GET("/transactions", handler.GetUserTransactions)
+	router.Use(middleware.AuthMiddleware()).POST("/transactions", handler.CreateTransaction)
 
 	// campaignRouter := router.Group("campaigns")
 	// {
