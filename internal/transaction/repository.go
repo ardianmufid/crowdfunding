@@ -309,3 +309,63 @@ func (r repository) Update(ctx context.Context, model Transaction) (transaction 
 
 	return
 }
+
+func (r repository) GetByID(ctx context.Context, ID int) (Transaction, error) {
+	var transaction Transaction
+
+	// Query untuk mengambil data Transactions berdasarkan user_id
+	transactionsQuery := `
+		SELECT 
+			id, user_id, campaign_id, amount, status, code, created_at, updated_at
+		FROM 
+			transactions
+		WHERE 
+			id = $1
+		ORDER BY 
+			id DESC
+	`
+	err := r.db.SelectContext(ctx, &transaction, transactionsQuery, ID)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	// Iterasi setiap transaksi untuk melengkapi data campaign dan campaign images
+	// for i, transaction := range transactions {
+	// Query untuk mengambil data Campaign terkait
+	campaignQuery := `
+			SELECT
+				id, user_id, name, short_description, description,
+				goal_amount, current_amount, perks, becker_count,
+				slug, created_at, updated_at
+			FROM campaigns
+			WHERE id = $1
+		`
+	var kampanye campaign.Campaign
+	err = r.db.GetContext(ctx, &kampanye, campaignQuery, transaction.CampaignID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Transaction{}, fmt.Errorf("campaign with ID %d not found", transaction.CampaignID)
+		}
+		return Transaction{}, err
+	}
+
+	// Query untuk mengambil CampaignImages yang terkait
+	imagesQuery := `
+			SELECT
+				id, campaign_id, file_name, is_primary, created_at, updated_at
+			FROM campaign_images
+			WHERE campaign_id = $1
+		`
+	var campaignImages []campaign.CampaignImage
+	err = r.db.SelectContext(ctx, &campaignImages, imagesQuery, kampanye.ID)
+	if err != nil {
+		return Transaction{}, err
+	}
+	kampanye.CampaignImages = &campaignImages
+
+	// Assign campaign ke transaction
+	transaction.Campaign = kampanye
+	// }
+
+	return transaction, nil
+}

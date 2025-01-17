@@ -100,3 +100,26 @@ func (h handler) CreateTransaction(ctx *gin.Context) {
 	response := helper.NewResponse("Success to create transactions", http.StatusOK, "success", NewMapperTransactionResponse(transaction))
 	ctx.JSON(http.StatusOK, response)
 }
+
+func (h handler) GetNotification(ctx *gin.Context) {
+
+	var request TransactionNotificationRequest
+
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		response := helper.NewResponse("Failed to process notification", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+
+		return
+	}
+
+	err = h.svc.ProcessPayment(ctx.Request.Context(), request)
+	if err != nil {
+		response := helper.NewResponse("Failed to process notification", http.StatusBadRequest, "error", nil)
+		ctx.JSON(http.StatusBadRequest, response)
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, request)
+}

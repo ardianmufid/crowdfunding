@@ -29,6 +29,7 @@ func Init(router *gin.RouterGroup, db *sqlx.DB) {
 	router.Use(middleware.AuthMiddleware()).GET("/campaigns/:id/transactions", handler.GetCampaignTransactions)
 	router.Use(middleware.AuthMiddleware()).GET("/transactions", handler.GetUserTransactions)
 	router.Use(middleware.AuthMiddleware()).POST("/transactions", handler.CreateTransaction)
+	router.POST("/transactions/notification", handler.GetNotification)
 
 	// campaignRouter := router.Group("campaigns")
 	// {

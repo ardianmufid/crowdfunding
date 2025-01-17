@@ -5,6 +5,7 @@ import (
 	"crowdfunding/internal/campaign"
 	"crowdfunding/internal/payment"
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type Repository interface {
 	GetByUserID(ctx context.Context, userID int) (transactions []Transaction, err error)
 	Save(ctx context.Context, model Transaction) (transaction Transaction, err error)
 	Update(ctx context.Context, model Transaction) (transaction Transaction, err error)
+	GetByID(ctx context.Context, ID int) (Transaction, error)
 }
 
 type service struct {
@@ -86,4 +88,44 @@ func (s service) CreateTransaction(ctx context.Context, request CreateTransactio
 	}
 
 	return newTransaction, nil
+}
+
+func (s service) ProcessPayment(ctx context.Context, request TransactionNotificationRequest) error {
+
+	transaction_id, _ := strconv.Atoi(request.OrderID)
+
+	transaction, err := s.repository.GetByID(ctx, transaction_id)
+	if err != nil {
+		return err
+	}
+
+	if request.PaymentType == "credit_card" && request.TransactionStatus == "capture" && request.FraudStatus == "accept" {
+		transaction.Status = "paid"
+	} else if request.TransactionStatus == "settlement" {
+		transaction.Status = "paid"
+	} else if request.TransactionStatus == "deny" || request.TransactionStatus == "expire" || request.TransactionStatus == "cancel" {
+		transaction.Status = "cancelled"
+	}
+
+	updatedTransaction, err := s.repository.Update(ctx, transaction)
+	if err != nil {
+		return err
+	}
+
+	campaign, err := s.campaignRepository.FindCampaignByID(ctx, transaction.CampaignID)
+	if err != nil {
+		return err
+	}
+
+	if updatedTransaction.Status == "paid" {
+		campaign.BeckerCount = campaign.BeckerCount + 1
+		campaign.CurrentAmount = campaign.CurrentAmount + updatedTransaction.Amount
+
+		_, err := s.campaignRepository.Update(ctx, campaign)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
