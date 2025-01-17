@@ -26,6 +26,8 @@ func Init(router *gin.RouterGroup, db *sqlx.DB) {
 		protectedRouter.POST("avatars", handler.UploadAvatar)
 	}
 
+	router.Use(middleware.AuthMiddleware()).GET("/users/fetch", handler.FetchUser)
+
 	// router.POST("avatars", handler.UploadAvatar)
 	// router.GET("user/fetch", handler.FetchUser)
 

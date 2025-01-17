@@ -178,3 +178,20 @@ func (h handler) UploadAvatar(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, response)
 }
+
+func (h handler) FetchUser(ctx *gin.Context) {
+
+	userID := ctx.GetInt("USER_ID")
+	currentUser, err := h.svc.GetUserByID(ctx.Request.Context(), userID)
+	if err != nil {
+		response := helper.NewResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	formatter := NewMapperUserResponse(currentUser, "")
+
+	response := helper.NewResponse("Sucessfully fetch user data", http.StatusOK, "success", formatter)
+
+	ctx.JSON(http.StatusOK, response)
+}

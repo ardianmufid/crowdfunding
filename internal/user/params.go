@@ -22,6 +22,7 @@ type RegisterUserResponse struct {
 	Email      string `json:"email"`
 	Occupation string `json:"occupation"`
 	Token      string `json:"token"`
+	ImageURL   string `json:"image_url"`
 }
 
 func NewMapperUserResponse(user User, token string) RegisterUserResponse {
@@ -31,5 +32,6 @@ func NewMapperUserResponse(user User, token string) RegisterUserResponse {
 		Email:      user.Email,
 		Occupation: user.Occupation,
 		Token:      token,
+		ImageURL:   user.AvatarFileName,
 	}
 }
